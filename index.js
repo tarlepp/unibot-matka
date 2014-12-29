@@ -38,7 +38,7 @@ module.exports = function init(options) {
         "units": "metric",
         "language": "fi-FI",
         "messages": {
-            "success": "${nick}: distance ${origin} - ${destination} is ${distance.rows[0].elements[0].distance.text} and travel time is about ${distance.rows[0].elements[0].duration.text}"
+            "success": "${nick}: distance ${origin} - ${destination} is ${distance.rows[0].elements[0].distance.text} and travel time is about ${distance.rows[0].elements[0].duration.text}."
         }
     };
 
@@ -56,7 +56,7 @@ module.exports = function init(options) {
          * @param   {string}    destination
          * @param   {string}    from
          */
-        function getDistance(origin, destination, from) {
+        function getDistance(origin, destination, from, showCompensation) {
             var url = 'https://maps.googleapis.com/maps/api/distancematrix/json?origins=' + origin + '&destinations=' + destination + '&language=' + pluginConfig.language + '&units=' + pluginConfig.units + '&key=' + pluginConfig.apiKey;
 
             // Fetch distance data from Google Distance Matrix API.
@@ -75,7 +75,15 @@ module.exports = function init(options) {
                         distance: distanceData
                     };
 
-                    channel.say(_.template(pluginConfig.messages.success, templateVars))
+                    var message = _.template(pluginConfig.messages.success, templateVars);
+
+                    if (showCompensation) {
+                        var compensation = Math.ceil(distanceData.rows[0].elements[0].distance.value / 1000) * 0.44;
+
+                        message += ' Ja kilsakorvaus tästä on ' + compensation + '€'
+                    }
+
+                    channel.say(message);
                 }
             });
         }
@@ -88,6 +96,17 @@ module.exports = function init(options) {
                 } else {
                     try {
                         getDistance(matches[1], matches[2], from);
+                    } catch (error) {
+                        channel.say('Oh noes, error: ' + error, from);
+                    }
+                }
+            },
+            '!kilometrikorvaus (.+)\\|(.+)': function command(from, matches) {
+                if (_.isEmpty(pluginConfig.apiKey)) {
+                    channel.say("You need to set Google Maps API key!", from);
+                } else {
+                    try {
+                        getDistance(matches[1], matches[2], from, true);
                     } catch (error) {
                         channel.say('Oh noes, error: ' + error, from);
                     }

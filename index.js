@@ -7,7 +7,7 @@ var _ = require('lodash');
 var helpers = require('unibot-helpers');
 
 /**
- * MAtka plugin for UniBot.
+ * Matka plugin for UniBot.
  *
  * @param   {Object} options Plugin options object, description below.
  *      db: {mongoose} the mongodb connection
@@ -24,13 +24,9 @@ module.exports = function init(options) {
      * Default plugin configuration. These can be override on your UniBot config.js file
      *
      * @type    {{
-     *              showFetchMessage: boolean,
+     *              apiKey: string,
      *              units: string,
-     *              messages: {
-     *                  fetch: string,
-     *                  success: string,
-     *                  error: string
-     *              }
+     *              language: string
      *          }}
      */
     var pluginConfig = {
@@ -40,16 +36,13 @@ module.exports = function init(options) {
     };
 
     // Merge configuration for plugin
-    if (_.isObject(config.plugins) && _.isObject(config.plugins.weather)) {
-        pluginConfig = _.merge(pluginConfig, config.plugins.weather);
+    if (_.isObject(config.plugins) && _.isObject(config.plugins.matka)) {
+        pluginConfig = _.merge(pluginConfig, config.plugins.matka);
     }
 
-    /**
-     * Actual UniBot weather plugin implementation. This plugin will fetch weather data from OpenWeatherMap API
-     * according to given city name.
-     */
     return function plugin(channel) {
         /**
+         * Todo add description.
          *
          * @param   {string}    origin
          * @param   {string}    destination

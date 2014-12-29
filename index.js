@@ -63,12 +63,10 @@ module.exports = function init(options) {
             helpers.downloadSsl(url, function downloadSsl(data) {
                 var distanceData = JSON.parse(data);
 
-                if (distanceData.status !== 'OK' && distanceData.rows[0].elements[0].status !== 'OK') {
-                    if (distanceData.status !== 'OK') {
-                        throw distanceData.error_message || distanceData.status;
-                    } else {
-                        throw distanceData.rows[0].elements[0].status;
-                    }
+                if (distanceData.status !== 'OK') {
+                    throw distanceData.error_message || distanceData.status;
+                } else if (distanceData.rows[0].elements[0].status !== 'OK') {
+                    throw distanceData.rows[0].elements[0].status;
                 } else {
                     var templateVars = {
                         nick: from,

@@ -1,0 +1,21 @@
+{
+  "name": "unibot-matka",
+  "version": "1.0.0",
+  "description": "Matka plugin for UniBot.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tarlepp/unibot-matka.git"
+  },
+  "author": "Tarmo Leppänen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tarlepp/unibot-matka/issues"
+  },
+  "dependencies": {
+    "unibot-helpers": "git://github.com/UniBot/unibot-helpers"
+  }
+}

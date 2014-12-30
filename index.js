@@ -27,9 +27,11 @@ module.exports = function init(options) {
      * @type    {{
      *              apiKey: string,
      *              units: string,
-     *              language: string
+     *              language: string,
+     *              compensation, number,
      *              messages: {
-     *                  success: string
+     *                  success: string,
+     *                  compensation: string
      *              }
      *          }}
      */
@@ -37,8 +39,10 @@ module.exports = function init(options) {
         "apiKey": "",
         "units": "metric",
         "language": "fi-FI",
+        "compensation": 0.44,
         "messages": {
-            "success": "${nick}: distance ${origin} - ${destination} is ${distance.rows[0].elements[0].distance.text} and travel time is about ${distance.rows[0].elements[0].duration.text}."
+            "success": "${nick}: distance ${origin} - ${destination} is ${distance.rows[0].elements[0].distance.text} and travel time is about ${distance.rows[0].elements[0].duration.text}.",
+            "compensation": " And mileage allowance for this is ${compensation}€"
         }
     };
 
@@ -55,12 +59,13 @@ module.exports = function init(options) {
          * @param   {string}    origin
          * @param   {string}    destination
          * @param   {string}    from
+         * @param   {boolean}   [showCompensation]
          */
         function getDistance(origin, destination, from, showCompensation) {
             var url = 'https://maps.googleapis.com/maps/api/distancematrix/json?origins=' + origin + '&destinations=' + destination + '&language=' + pluginConfig.language + '&units=' + pluginConfig.units + '&key=' + pluginConfig.apiKey;
 
             // Fetch distance data from Google Distance Matrix API.
-            helpers.downloadSsl(url, function downloadSsl(data) {
+            helpers.download(url, function onData(data) {
                 var distanceData = JSON.parse(data);
 
                 if (distanceData.status !== 'OK') {
@@ -78,9 +83,9 @@ module.exports = function init(options) {
                     var message = _.template(pluginConfig.messages.success, templateVars);
 
                     if (showCompensation) {
-                        var compensation = Math.ceil(distanceData.rows[0].elements[0].distance.value / 1000) * 0.44;
+                        templateVars.compensation = Math.ceil(distanceData.rows[0].elements[0].distance.value / 1000) * pluginConfig.compensation;
 
-                        message += ' Ja kilsakorvaus tästä on ' + compensation + '€'
+                        message += _.template(pluginConfig.messages.compensation, templateVars);
                     }
 
                     channel.say(message);
@@ -90,23 +95,14 @@ module.exports = function init(options) {
 
         // Regex for this plugin
         return {
-            '!matka (.+)\\|(.+)': function command(from, matches) {
+            '^!(matka|kilometrikorvaus) (.+)\\|(.+)': function command(from, matches) {
                 if (_.isEmpty(pluginConfig.apiKey)) {
                     channel.say("You need to set Google Maps API key!", from);
                 } else {
                     try {
-                        getDistance(matches[1], matches[2], from);
-                    } catch (error) {
-                        channel.say('Oh noes, error: ' + error, from);
-                    }
-                }
-            },
-            '!kilometrikorvaus (.+)\\|(.+)': function command(from, matches) {
-                if (_.isEmpty(pluginConfig.apiKey)) {
-                    channel.say("You need to set Google Maps API key!", from);
-                } else {
-                    try {
-                        getDistance(matches[1], matches[2], from, true);
+                        var compensation = matches[1] == 'kilometrikorvaus';
+
+                        getDistance(matches[2], matches[3], from, compensation);
                     } catch (error) {
                         channel.say('Oh noes, error: ' + error, from);
                     }

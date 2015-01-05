@@ -97,14 +97,14 @@ module.exports = function init(options) {
         return {
             '^!(matka|kilometrikorvaus) (.+)\\|(.+)': function command(from, matches) {
                 if (_.isEmpty(pluginConfig.apiKey)) {
-                    channel.say("You need to set Google Maps API key!", from);
+                    channel.say(from, 'You need to set Google Maps API key!');
                 } else {
                     try {
                         var compensation = matches[1] == 'kilometrikorvaus';
 
                         getDistance(matches[2], matches[3], from, compensation);
                     } catch (error) {
-                        channel.say('Oh noes, error: ' + error, from);
+                        channel.say(from, 'Oh noes, error: ' + error);
                     }
                 }
             }
